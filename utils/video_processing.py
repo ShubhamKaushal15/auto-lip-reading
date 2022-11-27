@@ -2,7 +2,6 @@ import numpy as np
 import os
 from scipy import ndimage
 import dlib
-# from scipy.misc import imresize
 import cv2
 import skvideo.io
 from imutils import face_utils
@@ -56,6 +55,8 @@ class Video(object):
         mouth_frames = []
         for frame in frames:
             dets = self.detector(frame, 1)
+            if len(dets) == 0:
+                continue
             np_mouth_points = face_utils.shape_to_np(self.predictor(frame, dets[0]))[48:] # get lips points
 
             x_min, y_min = min(np_mouth_points[:, 0]), min(np_mouth_points[:, 1])

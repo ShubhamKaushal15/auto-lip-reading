@@ -27,14 +27,17 @@ def main(source_path, target_path, face_predictor_path, source_extension = "*.mp
     detector = dlib.get_frontal_face_detector()
     for filepath in find_files(source_path, source_extension):
         print(f"Processing: {filepath}")
-        video = Video(vtype='face', detector=detector, predictor=predictor).from_video(filepath)
-
+        
         filepath_wo_ext = os.path.splitext(filepath)[0]
         target_dir = os.path.join(target_path, *filepath_wo_ext.split(os.path.sep)[-2:])
-        mkdir_p(target_dir)
+        
+        if not os.path.exists(target_dir):
+        
+            video = Video(vtype='face', detector=detector, predictor=predictor).from_video(filepath)
+            mkdir_p(target_dir)
 
-        for i, frame in enumerate(video.mouth):
-            io.imsave(os.path.join(target_dir, f"mouth_{i:03d}.png"), frame)
+            for i, frame in enumerate(video.mouth):
+                io.imsave(os.path.join(target_dir, f"mouth_{i:03d}.png"), frame)
 
 if __name__ == '__main__':
     """
@@ -47,8 +50,9 @@ if __name__ == '__main__':
     """
     
     source_path = os.path.join(home, "grid_videos") #sys.argv[1]
-    os.makedirs(os.path.join(home, "grid_imgs"))
     target_path = os.path.join(home, "grid_imgs") #sys.argv[2]
+    if not os.path.exists(target_path):
+        os.makedirs(target_path)
     face_predictor_path = os.path.join(os.getcwd(), "utils", "shape_predictor_68_face_landmarks.dat") #sys.argv[3]
     # source_extension = sys.argv[4]
     
