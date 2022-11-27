@@ -2,6 +2,9 @@ import os, fnmatch, sys, errno
 from skimage import io
 from video_processing import Video
 import dlib
+from os.path import expanduser
+
+home = expanduser("~")
 
 def mkdir_p(path):
     try:
@@ -35,15 +38,18 @@ def main(source_path, target_path, face_predictor_path, source_extension = "*.mp
 
 if __name__ == '__main__':
     """
+    Run this script from auto-lip-reading directory
+
     source_path: directory of video files
     target_path: directory where processed video should be saved
     face_predictor_path: path to shape_predictor_68_face_landmarks.dat (including)
     source_extension: *.mpg or *.avi, the extension of video files to be converted
     """
     
-    source_path = sys.argv[1]
-    target_path = sys.argv[2]
-    face_predictor_path = sys.argv[3]
+    source_path = os.path.join(home, "grid_videos") #sys.argv[1]
+    os.makedirs(os.path.join(home, "grid_imgs"))
+    target_path = os.path.join(home, "grid_imgs") #sys.argv[2]
+    face_predictor_path = os.path.join(os.getcwd(), "utils", "shape_predictor_68_face_landmarks.dat") #sys.argv[3]
     # source_extension = sys.argv[4]
     
     main(source_path, target_path, face_predictor_path)
