@@ -1,13 +1,15 @@
 from bs4 import BeautifulSoup
 import requests, zipfile, io, os
+from os.path import expanduser
+
+home = expanduser("~")
 
 def download_and_extract(download_url, # change path to save
-                         path_to_save = os.path.join(os.getcwd(), 
-                         "drive", "MyDrive", "DL for CV", "grid_data")):
+                         path_to_save = os.path.join(home, "grid_videos")):
 
     if not os.path.exists(path_to_save):
-        print("path does not exist")
-        return
+        print(f"path did not exist. Creating {path_to_save}...")
+        os.makedirs(path_to_save)
 
     r = requests.get(download_url)
     if not r.ok:
