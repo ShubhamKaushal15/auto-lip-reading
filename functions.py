@@ -1,7 +1,7 @@
 import os
 import torch
 import tqdm
-from dataset import LipReadSet
+from data.dataset import LipReadSet
 
 def evaluate(model, loss_function, data_loader, device):
     """

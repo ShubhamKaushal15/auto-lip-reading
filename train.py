@@ -1,7 +1,7 @@
 import os
 from functions import *
 import pandas as pd
-from dataset import LipReadSet
+from data.dataset import LipReadSet
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
