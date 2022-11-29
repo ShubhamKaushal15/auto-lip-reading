@@ -70,7 +70,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
         model.to(device)
         # model.double()
 
-        loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pth"))
+        loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pt"))
         model.load_state_dict(loaded_checkpoint['model_state_dict'])
         optimizer.load_state_dict(loaded_checkpoint['optimizer_state_dict'])
 
@@ -132,7 +132,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
 
             best_loss = val_loss
 
-            save_path = os.path.join(model_save_path, f"{model_alias}.pth")
+            save_path = os.path.join(model_save_path, f"{model_alias}.pt")
             if os.path.exists(save_path):
                 os.remove(save_path)
 
@@ -150,7 +150,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
             description_file.writelines(lines)
             description_file.close()
 
-    loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pth"))
+    loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pt"))
     model.load_state_dict(loaded_checkpoint['model_state_dict'])
     model.to(device)
 
