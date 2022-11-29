@@ -1,5 +1,5 @@
 {
-    "alias": "lipnet_overlap_mark1",
+    "alias": "lipnet_unseen_mark1",
     "epochs": 2,
     "batch_size": 64,
     "num_workers": 4,
