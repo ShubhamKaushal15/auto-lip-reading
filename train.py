@@ -8,6 +8,7 @@ import torch.optim as optim
 import torch
 import sys
 import json
+from lipnet import ConvGRU
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -16,11 +17,14 @@ def main(config_name):
     Runs the train scripts based on config file
     """
 
-    with open(os.path.join("configs", config_name), "r") as f:
+    with open(os.path.join("configs", f"{config_name}.json"), "r") as f:
         config = json.load(f)
 
-    model = ... # Needs to be hard-coded
-    # transform = ... TODO: albumentations feature
+    model = ConvGRU() # Needs to be hard-coded
+    model.to(device)
+
+    pretrained_lipnet = torch.load(config['pretrained_path'])
+    model.load_state_dict(pretrained_lipnet.state_dict())
 
     ctc_loss = nn.CTCLoss()
     adam_optimizer = optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=0., amsgrad=True)
