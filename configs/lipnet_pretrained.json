@@ -9,7 +9,7 @@
     "anno_path": "../grid_anno",
     "train_list": "data/overlapped/train_dirs.txt",
     "validation_list": "data/overlapped/validation_dirs.txt",
-    "test_list": "data/overlapped/test_list.txt",
+    "test_list": "data/overlapped/test_dirs.txt",
     "vid_padding": 75,
     "txt_padding": 32
 }
