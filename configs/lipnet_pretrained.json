@@ -1,0 +1,15 @@
+{
+    "alias": "lipnet_mark1",
+    "epochs": 2,
+    "batch_size": 64,
+    "num_workers": 4,
+    "learning_rate": 1e-4,
+    "pretrained_path": "weights/lipnet_pretrained.pt",
+    "video_path": "../grid_vidimgs",
+    "anno_path": "../grid_anno",
+    "train_list": "data/overlapped/train_dirs.txt",
+    "validation_list": "data/overlapped/validation_dirs.txt",
+    "test_list": "data/overlapped/test_list.txt",
+    "vid_padding": 75,
+    "txt_padding": 32
+}
