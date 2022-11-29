@@ -4,7 +4,7 @@ import numpy as np
 
 def overlapped(path_to_videos):
     """
-    path_to_videos: such that path_to_videos/s{i}/abcd1e/0**.img
+    path_to_videos: such that path_to_videos/s{i}/abcd1e/0**.png
     """
     num_test, num_val = 128, 128
     train_list, val_list, test_list = [], [], []
