@@ -116,7 +116,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
             # update gradients
             optimizer.step()
 
-        val_loss, val_wer, val_cer = evaluate(model, loss_function, val_loader)
+        val_loss, val_wer, val_cer = evaluate(model, loss_function, val_loader, device)
 
         with open(validation_loss_file_path, 'a') as loss_file:
             loss_file.write(f"{val_loss}\n")
