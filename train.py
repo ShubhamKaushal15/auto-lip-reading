@@ -78,8 +78,8 @@ def main(config_name):
 
 if __name__ == '__main__':
     """
-    Takes name of config file as argument
+    Takes name (not path) of config file as argument
     """
-    
     config_name = sys.argv[1]
+
     main(config_name)
