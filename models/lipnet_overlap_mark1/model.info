@@ -1,0 +1,5 @@
+Model name: <class 'lipnet.ConvGRU'>
+Optimizer: <class 'torch.optim.adam.Adam'>
+Best Loss:
+WER:
+CER:
