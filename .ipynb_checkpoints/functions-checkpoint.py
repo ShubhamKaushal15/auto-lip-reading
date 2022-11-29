@@ -2,6 +2,7 @@ import os
 import torch
 from tqdm import tqdm
 from data.dataset import LipReadSet
+import numpy as np
 
 def evaluate(model, loss_function, data_loader, device):
     """
@@ -11,10 +12,12 @@ def evaluate(model, loss_function, data_loader, device):
     model.eval() # setting model to eval mode
 
     running_loss = 0.0
-    running_wer = 0
-    running_cer = 0
+    running_wer = np.array([])
+    running_cer = np.array([])
+    
+    print("Evaluating")
 
-    for _, data in enumerate(data_loader, 0):
+    for _, data in enumerate(tqdm(data_loader), 0):
         
         # get the inputs; data is a dictionary
         inputs = data.get('vid').to(device)
@@ -33,12 +36,12 @@ def evaluate(model, loss_function, data_loader, device):
         # getting target text
         target_txt = [LipReadSet.arr2txt(targets[_]) for _ in range(targets.size(0))]
 
-        running_wer += LipReadSet.wer(pred_txt, target_txt)
-        running_cer += LipReadSet.cer(pred_txt, target_txt)
+        running_wer = np.append(running_wer,LipReadSet.wer(pred_txt, target_txt))
+        running_cer = np.append(running_cer, LipReadSet.cer(pred_txt, target_txt))
 
     final_loss = running_loss / len(data_loader)
-    final_wer = running_wer / len(data_loader)
-    final_cer = running_cer / len(data_loader)
+    final_wer = np.mean(running_wer)
+    final_cer = np.mean(running_cer)
 
     return final_loss, final_wer, final_cer
 
@@ -76,7 +79,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
 
         with open(os.path.join(model_save_path, "model.info"), 'r') as description_file:
             lines = description_file.readlines()
-            best_loss = float(lines[-1].split(":")[-1].strip())
+            best_loss = float(lines[-3].split(":")[-1].strip())
 
     validation_loss_file_path = os.path.join(model_save_path, "validation_losses.info")
     validation_wer_file_path = os.path.join(model_save_path, "validation_wer.info")
