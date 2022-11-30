@@ -1,4 +1,4 @@
-Model name: <class 'lipnet.ConvGRU'>
+x1xModel name: <class 'lipnet.ConvGRU'>
 Optimizer: <class 'torch.optim.adam.Adam'>
 Best Loss: 1.2514038282436328
 WER: 0.9116666666666667
