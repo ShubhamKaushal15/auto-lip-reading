@@ -1,6 +1,6 @@
 {
     "alias": "lipnet_unseen_mark1",
-    "epochs": 10,
+    "epochs": 15,
     "batch_size": 64,
     "num_workers": 4,
     "learning_rate": 1e-4,
