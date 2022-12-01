@@ -23,6 +23,7 @@ def main(config_name):
     model = ConvGRU() # Needs to be hard-coded
     model.to(device)
 
+    # NO NEED TO COMMENT THIS OUT #############################
     # pretrained_dict = torch.load(config['pretrained_path'])
     # model_dict = model.state_dict()
     # pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict.keys() and v.size() == model_dict[k].size()}

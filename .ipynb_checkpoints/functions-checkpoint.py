@@ -36,7 +36,7 @@ def evaluate(model, loss_function, data_loader, device):
         # getting target text
         target_txt = [LipReadSet.arr2txt(targets[_]) for _ in range(targets.size(0))]
 
-        running_wer = np.append(running_wer,LipReadSet.wer(pred_txt, target_txt))
+        running_wer = np.append(running_wer, LipReadSet.wer(pred_txt, target_txt))
         running_cer = np.append(running_cer, LipReadSet.cer(pred_txt, target_txt))
 
     final_loss = running_loss / len(data_loader)
@@ -75,6 +75,7 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
 
         loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pt"))
         model.load_state_dict(loaded_checkpoint['model_state_dict'])
+        # optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=0., amsgrad=True)
         optimizer.load_state_dict(loaded_checkpoint['optimizer_state_dict'])
 
         with open(os.path.join(model_save_path, "model.info"), 'r') as description_file:
