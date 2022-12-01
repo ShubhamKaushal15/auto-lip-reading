@@ -46,7 +46,7 @@ def main(config_name):
                          config['anno_path'],
                          config['validation_list'],
                          config['vid_padding'],
-                         config['txt_padding'])
+                         config['txt_padding'], 'validation')
 
     test_dataset = LipReadSet(config['video_path'],
                          config['anno_path'],

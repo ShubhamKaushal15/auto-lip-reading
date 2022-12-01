@@ -93,7 +93,9 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
     model.to(device) # get model to current device
     # model.double()
 
-    for _ in range(num_epochs):  # loop over the dataset multiple times
+    for i in range(num_epochs):  # loop over the dataset multiple times
+        
+        print(f"Training epoch: {i}")
 
         model.train() # set model to train mode
 
