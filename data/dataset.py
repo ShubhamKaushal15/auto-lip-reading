@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 import torch
 import glob
 import editdistance
+import random
 
 class LipReadSet(Dataset):
     letters = ' abcdefghijklmnopqrstuvwxyz'
@@ -42,6 +43,10 @@ class LipReadSet(Dataset):
         anno = self._load_anno(os.path.join(self.anno_path, spk, 'align', name + '.align'))
 
         # TODO: add data augmentation for training: albumentations
+        if(self.phase == 'train'):
+            vid = LipReadSet.HorizontalFlip(vid)
+          
+        vid = LipReadSet.ColorNormalize(vid)
               
         vid_len = vid.shape[0]
         anno_len = anno.shape[0]
@@ -83,6 +88,18 @@ class LipReadSet(Dataset):
         # for _ in range(length - len(array_copy)):
         #     array_copy += np.zeros(size)
         return np.append(array, zeros, axis=0)
+    
+    @staticmethod
+    def HorizontalFlip(batch_img, p=0.5):
+        # (T, H, W, C)
+        if random.random() > p:
+            batch_img = batch_img[:,:,::-1,...]
+        return batch_img
+
+    @staticmethod
+    def ColorNormalize(batch_img):
+        batch_img = batch_img / 255.0
+        return batch_img
     
     @staticmethod
     def txt2arr(txt):
