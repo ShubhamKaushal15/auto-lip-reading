@@ -126,3 +126,24 @@ class LipReadSet(Dataset):
     def cer(predict, truth):        
         cer = [1.0*editdistance.eval(p[0], p[1])/len(p[1]) for p in zip(predict, truth)]
         return np.array(cer)
+
+    
+class EncodingDataset(Dataset):
+    def __init__(self, data_folder_path, set_type):
+        
+        self.img_labels = pd.read_csv(f"{data_folder_path}/{set_type}/labels.csv")
+        self.img_dir = f"{data_folder_path}/{set_type}/imgs"
+          
+        
+        
+
+    def __len__(self):
+        return len(self.img_labels)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        
+        image = pd.read_csv(img_path)
+        label = self.img_labels.iloc[idx,1:]
+        
+        return image, label
