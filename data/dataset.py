@@ -154,9 +154,7 @@ class EncodingDataset(Dataset):
     def __init__(self, data_folder_path, set_type):
         
         self.img_labels = pd.read_csv(f"{data_folder_path}/{set_type}/labels.csv")
-        self.img_dir = f"{data_folder_path}/{set_type}/imgs"
-          
-        
+        self.img_dir = f"{data_folder_path}/{set_type}/imgs"  
         
 
     def __len__(self):
