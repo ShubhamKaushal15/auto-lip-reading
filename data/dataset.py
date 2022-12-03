@@ -146,7 +146,7 @@ class LipReadSet(Dataset):
 
     
 class EncodingDataset(Dataset):
-    def __init__(self, data_folder_path, set_type):
+    def __init__(self, data_folder_path, set_type, start_token='<', stop_token='>'):
         
         self.img_labels = pd.read_csv(f"{data_folder_path}/{set_type}/labels.csv")
         self.img_dir = f"{data_folder_path}/{set_type}/imgs"
@@ -158,9 +158,18 @@ class EncodingDataset(Dataset):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        #28 is start and 29 is stop
+        label = self.img_labels.iloc[idx]
+        fname = label.iloc[0]
         
-        image = pd.read_csv(img_path)
-        label = self.img_labels.iloc[idx,1:]
+        label["data"] = 28
+
+        label = np.append(np.trim_zeros(label.to_numpy()), 29)
+        label.resize(34)
+        label = torch.from_numpy(label)
+        
+        image = pd.read_pickle(f"{data_folder_path}/{set_type}/imgs/{fname}")
+        image = torch.from_numpy(image.to_numpy())
+        
         
         return image, label
