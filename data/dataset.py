@@ -7,8 +7,13 @@ import torch
 import glob
 import editdistance
 
+
 class LipReadSet(Dataset):
-    letters = ' abcdefghijklmnopqrstuvwxyz'
+    START_TOKEN = "0"
+    STOP_TOKEN = "1"
+    START_IDX = 28
+    STOP_IDX = 29
+    letters = ' abcdefghijklmnopqrstuvwxyz' + START_TOKEN + STOP_TOKEN
     start = 1
     """
     start: amount by which to offset integer labels. 0 is usually for blank in CTC
