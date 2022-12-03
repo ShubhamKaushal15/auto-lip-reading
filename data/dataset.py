@@ -8,8 +8,13 @@ import glob
 import editdistance
 import random
 
+
 class LipReadSet(Dataset):
-    letters = ' abcdefghijklmnopqrstuvwxyz'
+    START_TOKEN = "0"
+    STOP_TOKEN = "1"
+    START_IDX = 28
+    STOP_IDX = 29
+    letters = ' abcdefghijklmnopqrstuvwxyz' + START_TOKEN + STOP_TOKEN
     start = 1
     """
     start: amount by which to offset integer labels. 0 is usually for blank in CTC
@@ -149,9 +154,7 @@ class EncodingDataset(Dataset):
     def __init__(self, data_folder_path, set_type):
         
         self.img_labels = pd.read_csv(f"{data_folder_path}/{set_type}/labels.csv")
-        self.img_dir = f"{data_folder_path}/{set_type}/imgs"
-          
-        
+        self.img_dir = f"{data_folder_path}/{set_type}/imgs"  
         
 
     def __len__(self):
