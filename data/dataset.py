@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 import torch
 import glob
 import editdistance
+import random
 
 
 class LipReadSet(Dataset):
@@ -47,6 +48,10 @@ class LipReadSet(Dataset):
         anno = self._load_anno(os.path.join(self.anno_path, spk, 'align', name + '.align'))
 
         # TODO: add data augmentation for training: albumentations
+        if(self.phase == 'train'):
+            vid = LipReadSet.HorizontalFlip(vid)
+          
+        vid = LipReadSet.ColorNormalize(vid)
               
         vid_len = vid.shape[0]
         anno_len = anno.shape[0]
@@ -90,6 +95,18 @@ class LipReadSet(Dataset):
         return np.append(array, zeros, axis=0)
     
     @staticmethod
+    def HorizontalFlip(batch_img, p=0.5):
+        # (T, H, W, C)
+        if random.random() > p:
+            batch_img = batch_img[:,:,::-1,...]
+        return batch_img
+
+    @staticmethod
+    def ColorNormalize(batch_img):
+        batch_img = batch_img / 255.0
+        return batch_img
+    
+    @staticmethod
     def txt2arr(txt):
         arr = [LipReadSet.letters.index(c) for c in txt]
         
@@ -131,3 +148,24 @@ class LipReadSet(Dataset):
     def cer(predict, truth):        
         cer = [1.0*editdistance.eval(p[0], p[1])/len(p[1]) for p in zip(predict, truth)]
         return np.array(cer)
+
+    
+class EncodingDataset(Dataset):
+    def __init__(self, data_folder_path, set_type):
+        
+        self.img_labels = pd.read_csv(f"{data_folder_path}/{set_type}/labels.csv")
+        self.img_dir = f"{data_folder_path}/{set_type}/imgs"
+          
+        
+        
+
+    def __len__(self):
+        return len(self.img_labels)
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        
+        image = pd.read_csv(img_path)
+        label = self.img_labels.iloc[idx,1:]
+        
+        return image, label
