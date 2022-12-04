@@ -30,8 +30,8 @@ class LipTransformer(torch.nn.Module):
         super().__init__()
 
         """
-        Input: (S x V)
-        Output: (S x E)
+        Input: (S x N x V)
+        Output: (S x N x E)
         """
         self.video_encoder = torch.nn.Sequential(torch.nn.Linear(dim_video, dim),
                                                  torch.nn.ReLU(), 
@@ -40,14 +40,14 @@ class LipTransformer(torch.nn.Module):
                                                                          max_len=dim_video))
         
         """
-        Input: (T)
-        Output: (T x E)
+        Input: (T x N)
+        Output: (T x N x E)
         """
         self.text_encoder = torch.nn.Embedding(dim_text, dim)
         
         """
-        Inputs: (S x E), (T x E)
-        Output: (T x E)
+        Inputs: (S x N x E), (T x N x E)
+        Output: (T x N x E)
         """
         self.model = torch.nn.Transformer(d_model=dim,
                                           nhead=nhead,
@@ -55,8 +55,8 @@ class LipTransformer(torch.nn.Module):
                                           num_decoder_layers=nlayers)
 
         """
-        Input: (T x E)
-        Output: (T x C)
+        Input: (T x N x E)
+        Output: (T x N x C)
         """
         self.FC = torch.nn.Sequential(torch.nn.Linear(dim, 128),
                                       torch.nn.ReLU(),
@@ -80,12 +80,12 @@ class LipTransformer(torch.nn.Module):
         """
         Mask: Whether or not to perform masking, this should be true during training
 
-        Input X shape: (S x V) -> (75 x 3072)
-        Encoded X shape: (S x E) -> (75 x 512)
-        Input y shape: (T) -> (34)
-        Encoded y shape: (T x E) -> (34 x 512)
-        Output shape: (T x E) -> (34 x 512)
-        Final output shape: (T x C) -> (34 x 29)
+        Input X shape: (S x N x V)
+        Encoded X shape: (S x N x E)
+        Input y shape: (T x N)
+        Encoded y shape: (T x N x E)
+        Output shape: (T x N x E)
+        Final output shape: (T x N x C)
         """
         vid_enc = self.video_encoder(X)
         text_enc = self.text_encoder(y)

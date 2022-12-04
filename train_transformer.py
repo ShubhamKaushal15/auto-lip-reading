@@ -1,10 +1,11 @@
 import torch
 import numpy as np
 from tqdm import tqdm
+import os
 
 from constants import START_IDX, STOP_IDX
 from transformer import LipTransformer
-from data/dataset import LipReadSet
+from data.dataset import LipReadSet, EncodingDataset
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -91,34 +92,31 @@ def load(model, optimizer, model_alias, model_save_dir = os.path.join("models"))
             lines = description_file.readlines()
             best_loss = float(lines[-3].split(":")[-1].strip())
 
-    validation_loss_file_path = os.path.join(model_save_path, "validation_losses.info")
-    validation_wer_file_path = os.path.join(model_save_path, "validation_wer.info")
-    validation_cer_file_path = os.path.join(model_save_path, "validation_cer.info")
+    train_loss_path = os.path.join(model_save_path, "train_losses.info")
+    val_loss_path = os.path.join(model_save_path, "validation_losses.info")
+    val_wer_path = os.path.join(model_save_path, "validation_wer.info")
+    val_cer_path = os.path.join(model_save_path, "validation_cer.info")
 
-    if not os.path.exists(validation_loss_file_path):
-        with open(validation_loss_file_path, 'w') as a, open(validation_wer_file_path, 'w') as b, open(validation_cer_file_path, 'w') as c:
+    if not os.path.exists(val_loss_path):
+        with open(train_loss_path, 'w') as z, open(val_loss_path, 'w') as a, open(val_wer_path, 'w') as b, open(val_cer_path, 'w') as c:
             pass
 
-    return best_loss,
-           model_save_path,
-           validation_loss_file_path,
-           validation_wer_file_path,
-           validation_cer_file_path
+    return best_loss, model_save_path, train_loss_path, val_loss_path, val_wer_path, val_cer_path
 
 
-def update_checkpoint(model, model_save_path, model_alias):
+def update_checkpoint(model, loss_fn, model_save_path, model_alias):
     loaded_checkpoint = torch.load(os.path.join(model_save_path, f"{model_alias}.pt"))
     model.load_state_dict(loaded_checkpoint['model_state_dict'])
     model.to(device)
 
     with open(os.path.join(model_save_path, "training.success"), 'w') as success_file:
-        test_loss, test_wer, test_cer = evaluate(model, loss_function, test_loader, device)
+        test_loss, test_wer, test_cer = eval(model, loss_fn, test_loader, device)
         success_file.write(f"Test Loss: {test_loss:.6f}\n")
         success_file.write(f"Test WER: {test_wer:.6f}\n")
         success_file.write(f"Test CER: {test_cer:.6f}") 
 
 
-def update_loss_files(model, optimizer, loss, wer, cer, model_save_path, model_alias):
+def update_loss(model, optimizer, loss, wer, cer, model_save_path, model_alias):
     save_path = os.path.join(model_save_path, f"{model_alias}.pt")
     if os.path.exists(save_path):
         os.remove(save_path)
@@ -131,73 +129,116 @@ def update_loss_files(model, optimizer, loss, wer, cer, model_save_path, model_a
     # Save best loss in the model info file
     lines = open(os.path.join(model_save_path, "model.info"), 'r').readlines() # !may cause memory issues!
     lines[-3] = f"Best Loss: {loss}\n"
-    lines[-2] = f"WER: {val_wer}\n"
-    lines[-1] = f"CER: {val_cer}"
+    lines[-2] = f"WER: {wer}\n"
+    lines[-1] = f"CER: {cer}"
     description_file = open(os.path.join(model_save_path, "model.info"), 'w')
     description_file.writelines(lines)
     description_file.close()
 
+"""
+preds: (N x T)
+"""
+ALPHABET = "_ abcdefghijklmnopqrstuvwxyz<>"
+def indices_to_chars(preds):
+    # TODO: speed this up!!!!
+    # Is there a pytorch way to do this?
+    words = list()
+    for n in range(preds.shape[0]):
+        indices = preds[n]
+        word = ""
+        for i in indices:
+            word += ALPHABET[i.item()]
+        words.append(word)
 
-def eval(model, val_data):
+    return words
+    
+"""
+logits: (N X T X C)
+"""
+def decode_logits(logits):
+    preds = torch.argmax(logits, 2)
+    return indices_to_chars(preds)
+
+
+def eval(model, loss_fn, val_data):
     # VALIDATION
     val_loss = 0.0
     running_wer = np.array([])
     running_cer = np.array([])
 
     model.eval()
-    for vid, label in val_data:
+    for vid, label in tqdm(val_data):
         vid = vid.to(device)
         label = label.to(device)
 
-        # Forward pass
-        tgt_mask = model.create_mask(label.shape[0])
-        logits = model(vid, label, tgt_mask)
+        # Reorder vid to (S x N x V)
+        vid = torch.permute(vid, (1, 0, 2))
+        # Reorder label to (T x N)
+        label_in = torch.permute(label, (1, 0))
 
-        # Reorder label to be (N x T)
-        label = torch.permute(label, (1, 0))
-        loss = loss_fn(logits, label)
-        
+        # Forward pass
+        tgt_mask = model.create_mask(label_in.shape[0]).to(device)
+        logits = model(vid, label_in, tgt_mask)
+
+        logits_loss = torch.permute(logits, (1, 2, 0))
+        """
+        logits: (N x C x T)
+        label: (N x T)
+        """
+        loss = loss_fn(logits_loss, label)
         val_loss += loss.item()
 
-        pred_txt = LipReadSet.ctc_decode(outputs)
-        target_txt = [LipReadSet.arr2txt(targets[_]) for _ in range(targets.size(0))]
+        pred_txt = decode_logits(logits)
+        target_txt = indices_to_chars(label)
 
         running_wer = np.append(running_wer,LipReadSet.wer(pred_txt, target_txt))
         running_cer = np.append(running_cer, LipReadSet.cer(pred_txt, target_txt))
 
-    final_loss = running_loss / len(val_data)
+    val_loss = val_loss / len(val_data)
     final_wer = np.mean(running_wer)
     final_cer = np.mean(running_cer)
 
-    return final_loss, final_wer, final_cer
+    return val_loss, final_wer, final_cer
 
+
+def test():
+    pass
 
 def train(model, optimizer, train_data, val_data, model_alias, epochs=1, model_save_dir = os.path.join("models")):
 
-    best_loss,
-    model_save_path,
-    validation_loss_file_path,
-    validation_wer_file_path,
-    validation_cer_file_path = load(model, model_alias, model_save_dir)
+    best_loss, model_save_path, train_loss_path, val_loss_path, val_wer_path, val_cer_path = load(model, optimizer, model_alias, model_save_dir)
 
     model.to(device)
-    loss_fn = torch.nn.CTCLoss()
+    loss_fn = torch.nn.CrossEntropyLoss()
 
-    for epoch in tqdm(range(epochs)):
-
+    for epoch in range(epochs):
+        print("Epoch ", str(epoch))
+        print("Train")
         # TRAIN
         model.train()
         train_loss = 0.0
-        for vid, label in train_data:
+        for vid, label in tqdm(train_data):
+            """
+            vid: (N x S x V)
+            label: (N x T)
+            """
             vid = vid.to(device)
             label = label.to(device)
 
-            # Forward pass
-            tgt_mask = model.create_mask(label.shape[0])
-            logits = model(vid, label, tgt_mask)
+            # Reorder vid to (S x N x V)
+            vid = torch.permute(vid, (1, 0, 2))
+            # Reorder label to (T x N)
+            label_in = torch.permute(label, (1, 0))
 
-            # Reorder label to be (N x T)
-            label = torch.permute(label, (1, 0))
+            # Forward pass
+            tgt_mask = model.create_mask(label_in.shape[0]).to(device)
+            logits = model(vid, label_in, tgt_mask)
+
+            logits = torch.permute(logits, (1, 2, 0))
+            """
+            logits: (N x C x T)
+            label: (N x T)
+            """
             loss = loss_fn(logits, label)
             train_loss += loss.item()
 
@@ -206,30 +247,46 @@ def train(model, optimizer, train_data, val_data, model_alias, epochs=1, model_s
             loss.backward()
             optimizer.step()
 
+        train_loss /= len(train_data)
+        with open(train_loss_path, 'a') as train_file:
+            train_file.write(f"{train_loss}\n")
+
         # Write loss, wer, cer to file
-        val_loss, val_wer, val_cer = eval(model, val_data)
-        with open(validation_loss_file_path, 'a') as loss_file:
+        print("Validation")
+        val_loss, val_wer, val_cer = eval(model, loss_fn, val_data)
+
+        with open(val_loss_path, 'a') as loss_file:
             loss_file.write(f"{val_loss}\n")
-        with open(validation_wer_file_path, 'a') as wer_file:
+        with open(val_wer_path, 'a') as wer_file:
             wer_file.write(f"{val_wer}\n")
-        with open(validation_cer_file_path, 'a') as cer_file:
+        with open(val_cer_path, 'a') as cer_file:
             cer_file.write(f"{val_cer}\n")
 
-            # Saving best model based on validation loss
+        # Saving best model based on validation loss
         if val_loss <= best_loss:
             best_loss = val_loss
-            update_loss_files(model, optimizer, best_loss, val_wer, val_cer, model_save_path, model_alias)
+            update_loss(model, optimizer, best_loss, val_wer, val_cer, model_save_path, model_alias)
             
-
-    update_checkpoint(model, model_save_path, model_alias)
+    # TODO: Implement testing with predictions
+    #update_checkpoint(model, loss_fn, model_save_path, model_alias)
 
     return model
 
 
+def get_data(path):
+    train = EncodingDataset(path, "train")
+    val = EncodingDataset(path, "val")
+
+    train_data = torch.utils.data.DataLoader(train, batch_size=128, num_workers=4)
+    val_data = torch.utils.data.DataLoader(val, batch_size=128, num_workers=4)
+    return train_data, val_data
+
 if __name__ == "__main__":
-    train_data = None
-    val_data = None
-    model = LipTransformer(dim=128, nhead=4, nlayers=3)
+    print("Getting data")
+    train_data, val_data = get_data("../encoding_data")
+    print("Creating model")
+    model = LipTransformer(dim=512, nhead=8, nlayers=6)
     optimizer = torch.optim.Adam(model.parameters())
-    model = train(model, optimizer, train_data, val_data, "transformer")
+    print("Training model")
+    model = train(model, optimizer, train_data, val_data, model_alias="transformer", epochs=100)
 

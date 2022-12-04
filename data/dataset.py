@@ -7,11 +7,13 @@ import torch
 import glob
 import editdistance
 import random
+import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 
 class LipReadSet(Dataset):
-    START_TOKEN = "0"
-    STOP_TOKEN = "1"
+    START_TOKEN = "<"
+    STOP_TOKEN = ">"
     START_IDX = 28
     STOP_IDX = 29
     letters = ' abcdefghijklmnopqrstuvwxyz' + START_TOKEN + STOP_TOKEN
@@ -169,10 +171,9 @@ class EncodingDataset(Dataset):
 
         label = np.append(np.trim_zeros(label.to_numpy()), 29)
         label.resize(34)
-        label = torch.from_numpy(label)
+        label = torch.from_numpy(label.astype("long"))
         
-        image = pd.read_pickle(f"{data_folder_path}/{set_type}/imgs/{fname}")
+        image = pd.read_pickle(f"{self.img_dir}/{fname}")
         image = torch.from_numpy(image.to_numpy())
-        
         
         return image, label

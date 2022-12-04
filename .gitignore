@@ -1,2 +1,4 @@
 __pycache__/
 models/**/*.pt
+models/transformer/
+.ipynb_checkpoints/
