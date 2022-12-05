@@ -224,7 +224,8 @@ def main(config_name):
     with open(os.path.join("configs", f"{config_name}.json"), "r") as f:
         config = json.load(f)
 
-    model = STCNNTransformer() # Needs to be hard-coded
+    model = STCNNTransformer(config['num_heads'], config['num_encoder_layers'], 
+                            config['num_decoder_layers'], config['dim_model']) # Needs to be hard-coded
     model.to(device)
 
     # NO NEED TO COMMENT THIS IN #############################

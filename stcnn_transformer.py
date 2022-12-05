@@ -26,7 +26,8 @@ class PositionalEncoding(torch.nn.Module):
             return self.dropout(x)
 
 class STCNNTransformer(torch.nn.Module):
-    def __init__(self, transformer_dim: int=512, output_dim: int=30, dropout_p=0.5):
+    def __init__(self, nhead: int=8, num_encoder_layers: int=6, num_decoder_layers: int=6, 
+                    transformer_dim: int=512, output_dim: int=30, dropout_p=0.5):
         super(STCNNTransformer, self).__init__()
         self.conv1 = nn.Conv3d(3, 32, (3, 5, 5), (1, 2, 2), (1, 2, 2))
         self.pool1 = nn.MaxPool3d((1, 2, 2), (1, 2, 2))
@@ -42,6 +43,7 @@ class STCNNTransformer(torch.nn.Module):
         Output: (S x E)
         """
         self.video_encoder = torch.nn.Sequential(torch.nn.Linear(96*4*8, transformer_dim),
+                                                 nn.ReLU(),
                                                  PositionalEncoding(d_model=transformer_dim, 
                                                                     dropout=0.1))
         
