@@ -30,7 +30,7 @@ def evaluate(model, loss_function, data_loader, device):
     print("Evaluating")
 
     for _, data in enumerate(tqdm(data_loader), 0):
-        
+
         # get the inputs; data is a dictionary
         inputs = data.get('vid').to(device)
         targets = data.get('txt').to(device)
