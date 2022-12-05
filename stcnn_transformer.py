@@ -60,9 +60,9 @@ class STCNNTransformer(torch.nn.Module):
         Output: (T x E)
         """
         self.model = torch.nn.Transformer(d_model=transformer_dim,
-                                          nhead=8,
-                                          num_encoder_layers=6,
-                                          num_decoder_layers=6)
+                                          nhead=nhead,
+                                          num_encoder_layers=num_encoder_layers,
+                                          num_decoder_layers=num_decoder_layers)
 
         """
         Input: (T x E)
