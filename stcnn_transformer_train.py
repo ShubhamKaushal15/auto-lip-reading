@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import os
-from functions import *
 from data.dataset import LipReadSet
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -190,7 +189,7 @@ def create_mask(len_text):
     mask = mask.float()
     mask = mask.masked_fill(mask == 0, float('-inf')) # Convert zeros to -inf
     mask = mask.masked_fill(mask == 1, float(0.0)) # Convert ones to 0
-    return mask 
+    return mask.to(device) 
 
 def predict(model, input_video, dim_text):
 

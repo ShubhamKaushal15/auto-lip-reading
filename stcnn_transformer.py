@@ -92,8 +92,8 @@ class STCNNTransformer(torch.nn.Module):
         init.kaiming_normal_(self.conv3.weight, nonlinearity='relu')
         init.constant_(self.conv3.bias, 0)        
         
-        init.kaiming_normal_(self.FC.weight, nonlinearity='sigmoid')
-        init.constant_(self.FC.bias, 0)
+        # init.kaiming_normal_(self.FC.weight, nonlinearity='sigmoid')
+        # init.constant_(self.FC.bias, 0)
 
     """
     Input: len_text = T
@@ -141,7 +141,7 @@ class STCNNTransformer(torch.nn.Module):
 
         # permute to (T, B, ...)
         out = self.model(vid_enc.permute(1, 0, 2).contiguous(),
-                        text_enc.permute(1, 0, 2).contiguous(), tgt_mask=tgt_mask)#self.create_mask(y.size(1)))
+                        text_enc.permute(1, 0, 2).contiguous(), tgt_mask=tgt_mask)
         
         # (T x B x C)
         logits = self.FC(out)
