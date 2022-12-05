@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
+# import LipTransformer from transformer
 
 class ConvGRU(torch.nn.Module):
     def __init__(self, dropout_p=0.5):
