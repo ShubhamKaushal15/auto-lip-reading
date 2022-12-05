@@ -36,9 +36,10 @@ def evaluate(model, loss_function, data_loader, device):
         targets = data.get('txt').to(device)
 
         tgt_mask = create_mask(targets.size(1) - 1)
+        tgt_pad_mask = create_pad_mask(targets[:, :-1], 0)
 
         # getting predictions
-        outputs = model(inputs, targets[:, :-1], tgt_mask = tgt_mask)
+        outputs = model(inputs, targets[:, :-1], tgt_mask = tgt_mask, tgt_key_padding_mask=tgt_pad_mask)
         pred_txt = LipReadSet.ctc_decode(outputs)
 
         # calculate CE loss
@@ -93,7 +94,8 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
         with open(os.path.join(model_save_path, "model.info"), 'r') as description_file:
             lines = description_file.readlines()
             best_loss = float(lines[-3].split(":")[-1].strip())
-
+    
+    train_loss_file_path = os.path.join(model_save_path, "train_losses.info")
     validation_loss_file_path = os.path.join(model_save_path, "validation_losses.info")
     validation_wer_file_path = os.path.join(model_save_path, "validation_wer.info")
     validation_cer_file_path = os.path.join(model_save_path, "validation_cer.info")
@@ -110,6 +112,8 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
         print(f"Training epoch: {i}")
 
         model.train() # set model to train mode
+        
+        # train_loss_file = open(train_loss_file_path, 'a')
 
         for _, data in enumerate(tqdm(train_loader), 0):
 
@@ -121,13 +125,14 @@ def train(model, num_epochs, loss_function, optimizer, model_alias,
             optimizer.zero_grad()
 
             tgt_mask = create_mask(targets.size(1) - 1)
+            tgt_pad_mask = create_pad_mask(targets[:, :-1], 0)
 
             # getting predictions
-            outputs = model(inputs, targets[:, :-1], tgt_mask=tgt_mask) # B x T x C
-
+            outputs = model(inputs, targets[:, :-1], tgt_mask=tgt_mask, tgt_key_padding_mask=tgt_pad_mask) # B x T x C
+            
             # calculate CE loss
             loss = loss_function(outputs.permute(0, 2, 1), targets[:, 1:]) # CE wants (B x C x T)
-
+                        
             # backprop
             loss.backward()
 
@@ -189,7 +194,12 @@ def create_mask(len_text):
     mask = mask.float()
     mask = mask.masked_fill(mask == 0, float('-inf')) # Convert zeros to -inf
     mask = mask.masked_fill(mask == 1, float(0.0)) # Convert ones to 0
-    return mask.to(device) 
+    return mask.to(device)
+
+def create_pad_mask(matrix: torch.tensor, pad_token: int=0):
+    # If matrix = [1,2,3,0,0,0] where pad_token=0, the result mask is
+    # [False, False, False, True, True, True]
+    return (matrix == pad_token).to(device)
 
 def predict(model, input_video, dim_text):
 

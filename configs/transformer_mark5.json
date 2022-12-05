@@ -1,9 +1,9 @@
 {
-    "alias": "transformer_mark3",
+    "alias": "transformer_mark5",
     "epochs": 30,
     "batch_size": 64,
     "num_workers": 4,
-    "learning_rate": 1e-4,
+    "learning_rate": 5e-4,
     "video_path": "../grid_vidimgs",
     "anno_path": "../grid_anno",
     "train_list": "data/unseen/train_dirs.txt",
@@ -12,7 +12,7 @@
     "vid_padding": 75,
     "txt_padding": 34,
     "num_heads": 8,
-    "num_encoder_layers": 4,
-    "num_decoder_layers": 4,
-    "dim_model": 1024
+    "num_encoder_layers": 6,
+    "num_decoder_layers": 6,
+    "dim_model": 512
 }
