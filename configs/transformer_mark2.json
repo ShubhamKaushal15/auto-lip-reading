@@ -1,0 +1,14 @@
+{
+    "alias": "transformer_mark2",
+    "epochs": 15,
+    "batch_size": 64,
+    "num_workers": 4,
+    "learning_rate": 1e-4,
+    "video_path": "../grid_vidimgs",
+    "anno_path": "../grid_anno",
+    "train_list": "data/unseen/train_dirs.txt",
+    "validation_list": "data/unseen/val_dirs.txt",
+    "test_list": "data/unseen/test_dirs.txt",
+    "vid_padding": 75,
+    "txt_padding": 34
+}

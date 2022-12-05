@@ -1,0 +1,5 @@
+Model name: <class 'stcnn_transformer.STCNNTransformer'>
+Optimizer: <class 'torch.optim.adam.Adam'>
+Best Loss:
+WER:
+CER:
