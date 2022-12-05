@@ -83,7 +83,7 @@ class LipReadSet(Dataset):
             lines = [line.strip().split(' ') for line in f.readlines()]
             txt = [line[2] for line in lines]
             txt = list(filter(lambda s: not s.lower() in ['sil', 'sp'], txt))
-        return LipReadSet.txt2arr(' '.join(txt).lower())
+        return LipReadSet.txt2arr(LipReadSet.START_TOKEN + ' '.join(txt).lower() + LipReadSet.STOP_TOKEN)
     
     def _padding(self, array, length):
         """
