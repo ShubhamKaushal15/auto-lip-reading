@@ -11,7 +11,7 @@ import sys
 import json
 
 from constants import START_IDX, STOP_IDX
-from stcnn_transformer import STCNNTransformer
+from video_transformer import VideoTransformer
 from data.dataset import LipReadSet
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -234,7 +234,7 @@ def main(config_name):
     with open(os.path.join("configs", f"{config_name}.json"), "r") as f:
         config = json.load(f)
 
-    model = STCNNTransformer(config['num_heads'], config['num_encoder_layers'], 
+    model = VideoTransformer(config['num_heads'], config['num_encoder_layers'], 
                             config['num_decoder_layers'], config['dim_model']) # Needs to be hard-coded
     model.to(device)
 

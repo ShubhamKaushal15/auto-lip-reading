@@ -1,0 +1,5 @@
+Model name: <class 'video_transformer.VideoTransformer'>
+Optimizer: <class 'torch.optim.adam.Adam'>
+Best Loss:
+WER:
+CER:
