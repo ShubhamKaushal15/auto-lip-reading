@@ -7,4 +7,5 @@ Then run `scripts/extract_mouth_region.py`. It will create a `grid_images` folde
 
 Although `pretrained` weights and config files are present, there is no need to use them.
 
-Finally, train models with any of the `train_*.py` scripts. You can create configs in order to store hyperparameters.
+Model architectures are in `/model_archs`. 
+Training scripts are in `/train_scripts`. You can create configs in order to store hyperparameters.
